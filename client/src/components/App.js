@@ -10,6 +10,7 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [messages, setMessages] = useState([]);
   const [search, setSearch] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Update the URL to match your Flask API endpoint
@@ -22,10 +23,15 @@ function App() {
         // Throw an error for non-OK responses
         throw new Error("Failed to fetch messages");
       })
-      .then((messages) => setMessages(messages))
+      .then((messages) => {
+        setMessages(messages);
+        setError(null); // Clear any previous errors
+      })
       .catch((error) => {
         // Handle errors from fetch
         console.error(error.message);
+        setMessages([]); // Clear messages on error
+        setError(error.message);
       });
   }, []);
 
@@ -57,15 +63,20 @@ function App() {
     <main className={isDarkMode ? "dark-mode" : ""}>
       <Header isDarkMode={isDarkMode} onToggleDarkMode={setIsDarkMode} />
       <Search search={search} onSearchChange={setSearch} />
-      <MessageList
-        messages={displayedMessages}
-        currentUser={testUser}
-        onMessageDelete={handleDeleteMessage}
-        onUpdateMessage={handleUpdateMessage}
-      />
+      {error ? (
+        <div className="error-message">{error}</div>
+      ) : (
+        <MessageList
+          messages={displayedMessages}
+          currentUser={testUser}
+          onMessageDelete={handleDeleteMessage}
+          onUpdateMessage={handleUpdateMessage}
+        />
+      )}
       <NewMessage currentUser={testUser} onAddMessage={handleAddMessage} />
     </main>
   );
 }
 
 export default App;
+
